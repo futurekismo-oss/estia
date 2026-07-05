@@ -45,11 +45,23 @@ print(f"Fetching {youtube_link}")
 player.wait_until_playing()
 print(f"Playing {video_name}")
 
+try:
+    while True:
+        user_input = input("Press [q] or type 'quit' to exit: ").strip().lower()
 
-player.wait_for_playback()
+        if user_input in ["q", "quit", "exit"]:
+            print("Stopping playback and exiting...")
+            break
+        else:
+            print("Unknown command. Type 'q' or 'quit' to exit.")
+except KeyboardInterrupt:
+    print("\nForce closed via Ctrl+C. Exiting cleanly...")
 
-# pp = pprint.PrettyPrinter(indent=4)
-# pp.pprint(search[1])
+finally:
+    player.terminate()
+
+
+
 
 
 
