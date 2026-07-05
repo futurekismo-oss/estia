@@ -19,7 +19,11 @@ search = ytmusic.search(user_search, filter='songs', limit=10)
 print(f'Searching for "{user_search}" music...')
 
 for index, music in enumerate(search):
-    print(f" {index} - {music["title"]} ")
+    if index < 10:
+        print(f" {index}  - {music["title"]} ")
+    else:
+        print(f" {index} - {music["title"]} ")
+
 
 
 user_choice = get_safe_int("Enter a number: ")
