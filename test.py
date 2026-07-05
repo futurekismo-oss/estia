@@ -11,7 +11,7 @@ def get_safe_int(prompt):
         except ValueError:
             print("Invalid input. Please enter a valid number.")
 
-user_search = input("Search for Music: ")
+user_search = input("Search for: ")
 
 
 
