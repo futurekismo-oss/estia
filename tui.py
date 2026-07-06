@@ -1,15 +1,16 @@
 from blessed import Terminal
-import time
 import builtins as __builtin__
+import time
+
 
 term = Terminal()
-print(term.clear)
+
 
 center_x: int = term.width // 2
 center_y: int = term.height // 2
 
 
-def print(*args, **kwargs):
+def printt(*args, **kwargs):
     return __builtin__.print(*args, **kwargs, end="", flush=True)
 
 
@@ -28,10 +29,15 @@ def progress_bar(value: float, bar_len=20):
 
 def typing_effect(text: str, x: int, y: int, delay=0.1):
 
-    print(term.move_xy(x, y))
+    printt(term.move_xy(x, y))
 
-    for char in text:
-        print(char)
+    for part in term.split_seqs(text):
+        printt(part)
+
+        if part.startswith("\x1b"):
+            time.sleep(0.1)
+            continue
+
         key = term.inkey(timeout=delay)
         if key:
             return key
@@ -40,12 +46,12 @@ def typing_effect(text: str, x: int, y: int, delay=0.1):
 
 def print_with_bars(text: str, x: int, y: int):
 
-    print(term.move_xy(x - 1, y) + "[")
-    print(term.move_xy(x + get_len(text), y) + "]")
+    printt(term.move_xy(x - 1, y) + "[")
+    printt(term.move_xy(x + get_len(text), y) + "]")
 
-    print(term.move_xy(x, y))
+    printt(term.move_xy(x, y))
 
-    print(text)
+    printt(text)
 
 
 def get_text_center_x(text):
@@ -56,35 +62,8 @@ def get_len(text):
     return len(term.strip_seqs(text))
 
 
-setattr(term, "progress_bar", progress_bar)
-
-
-with term.cbreak(), term.hidden_cursor(), term.fullscreen():
-    intro = [
-        "Hello, Nice to meet you",
-        f"This is {term.magenta_bold('Estia')}",
-        "A Pomodromo Timer with lofi music builtin",
-    ]
-
-    for text in intro:
-        text_length = get_len(text)
-        start_x = get_text_center_x(text)
-
-        print(term.move_xy(0, center_y) + term.clear_eol)
-
-        print(term.move_xy(start_x - 1, center_y) + "[")
-        print(term.move_xy(start_x + text_length, center_y) + "]")
-
-        key_pressed = typing_effect(text, start_x, center_y, delay=0.05)
-
-        print(term.normal)
-        if not key_pressed:
-            key_pressed = term.inkey(timeout=1.0)
-
-        if key_pressed and key_pressed.lower() == "q":
-            break
-
-    print(
+def __unused():
+    printt(
         term.move_xy(0, center_y) + term.clear_eol
     )  # Clear the row when the intro finishes
 
@@ -96,7 +75,4 @@ with term.cbreak(), term.hidden_cursor(), term.fullscreen():
         if key.lower() == "q":
             break
 
-
-print(
-    "\nQuit Bye\n"
-)
+    printt("\nQuit Bye\n")

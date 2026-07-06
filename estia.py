@@ -1,67 +1,26 @@
-import mpv
-from ytmusicapi import YTMusic
-
-player = mpv.MPV(video=False, ytdl=True)
-ytmusic = YTMusic()
-
-def get_safe_int(prompt):
-    while True:
-        try:
-            return int(input(prompt))
-        except ValueError:
-            print("Invalid input. Please enter a valid number.")
-
-user_search = input("Search for: ")
+import db
+import tui
+import stages
+from player import EstiaPlayer
 
 
+def run_app():
+    db.init_database()
+    music = EstiaPlayer()
+    term = tui.term
 
-search = ytmusic.search(user_search, filter='songs', limit=10)
-print(f'Searching for "{user_search}" music...')
+    print(term.set_window_title("Estia"))
 
-for index, music in enumerate(search):
-    if index < 10:
-        print(f" {index}  - {music["title"]} ")
-    else:
-        print(f" {index} - {music["title"]} ")
-
-
-
-user_choice = get_safe_int("Enter a number: ")
-
-
-
-
-# Get the video id of the first search
-video_id = search[user_choice]["videoId"]
-video_name = search[user_choice]["title"]
-
-youtube_link = f"https://www.youtube.com/watch?v={video_id}"
+    try:
+        with term.cbreak(), term.hidden_cursor(), term.fullscreen():
+            stages.intro(music)
+            stages.music_search_input()
+    except (KeyboardInterrupt, SystemExit):
+        pass
+    finally:
+        music.stop()
+        print(term.normal + "\nSession closed. Goodbye!\n")
 
 
-player.play(youtube_link)
-print(f"Fetching {youtube_link}")
-
-
-player.wait_until_playing()
-print(f"Playing {video_name}")
-
-try:
-    while True:
-        user_input = input("Press [q] or type 'quit' to exit: ").strip().lower()
-
-        if user_input in ["q", "quit", "exit"]:
-            print("Stopping playback and exiting...")
-            break
-        else:
-            print("Unknown command. Type 'q' or 'quit' to exit.")
-except KeyboardInterrupt:
-    print("\nForce closed via Ctrl+C. Exiting cleanly...")
-
-finally:
-    player.terminate()
-
-
-
-
-
-
+if __name__ == "__main__":
+    run_app()
