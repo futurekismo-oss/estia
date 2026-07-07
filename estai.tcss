@@ -1,0 +1,4 @@
+Header {
+  dock: top;
+  height: 1;
+}
