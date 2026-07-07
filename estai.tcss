@@ -2,3 +2,23 @@ Header {
   dock: top;
   height: 1;
 }
+
+#results-list {
+  visibility: hidden;
+}
+
+#stop {
+  display: none
+}
+
+.started {
+    color: $text;
+}
+
+.started #start {
+    display: none
+}
+
+.started #stop {
+    display: block
+}
