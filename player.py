@@ -13,7 +13,6 @@ class EstiaPlayer:
     def play_song(self, video_id: str):
         youtube_link = f"https://www.youtube.com/watch?v={video_id}"
         self.player.play(youtube_link)
-        self.player.wait_until_playing()
 
     def stop(self):
         self.player.terminate()
