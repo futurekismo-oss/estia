@@ -15,6 +15,11 @@ A Pomodoro Study Timer ***Tui*** with music streaming from youtube music integra
 - [ ] Web Version
 - [ ] *other planned features...*
 
+## AI Notice
+AI has been used in this project as a learning tool such as explaining
+various concepts and generate general examples related to this project.
+It has not been used to code any parts of this project
+
 
 ## Demo
 
