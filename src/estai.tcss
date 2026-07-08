@@ -1,24 +1,75 @@
+Screen {
+  layout: grid;
+  grid-size: 2 1;
+}
+
+
+
+Pomodoro {
+  background: $secondary-background-darken-3;
+  height: 100%;
+  width: 100%;
+  border: round $accent-darken-1;
+  align: center middle;
+}
+
+#track_progress {
+  visibility: hidden;
+  height: 4;
+}
+
+
+
+#search-bar {
+  margin-bottom: 1;
+}
+
+#time {
+  width: auto;
+  height: auto;
+
+}
+
 Header {
   dock: top;
   height: 1;
 }
 
+Footer {
+  dock: bottom;
+  height: 1;
+}
+
+MusicSearch {
+  content-align: center middle;
+  margin: 1 2;
+
+}
+
 #results-list {
   visibility: hidden;
+  margin-bottom: 1;
+}
+
+#start {
+  width: auto;
+  height: auto;
 }
 
 #stop {
-  display: none
+  width: auto;
+  height: auto;
+  display: none;
 }
 
 .started {
-    color: $text;
+  color: $text;
 }
 
 .started #start {
-    display: none
+  display: none;
 }
 
 .started #stop {
-    display: block
+  display: block;
 }

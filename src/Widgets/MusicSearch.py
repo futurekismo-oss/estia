@@ -3,7 +3,7 @@ from player import EstiaPlayer
 
 from textual import work
 from textual.app import ComposeResult
-from textual.widgets import OptionList, Input, Label
+from textual.widgets import OptionList, Input, Label, ProgressBar
 from textual.containers import Vertical
 from textual.widgets.option_list import Option
 
@@ -22,7 +22,6 @@ class MusicSearch(Vertical):
         try:
             tracks = self.player.search_songs(search_query)
         except requestsConnectionError:
-            tracks = None
             self.app.call_from_thread(self.label.update, "Fetching Failed")
             self.app.call_from_thread(
                 self.app.notify,
@@ -60,9 +59,14 @@ class MusicSearch(Vertical):
     def compose(self) -> ComposeResult:
         yield Input(placeholder="Search a song", type="text", id="search-bar")
         yield OptionList(id="results-list")
+        yield Label("", id="label")
+        yield ProgressBar(
+            total=100, show_percentage=False, show_eta=False, id="track_progress"
+        )
 
     def on_mount(self) -> None:
-        self.label = self.app.query_one(Label)
+        self.label = self.query_one("#label", Label)
+        self.progress_bar = self.query_one("#track_progress", ProgressBar)
 
     def animate_fetcthig(self, base_str: str) -> None:
         if not self.is_fetching:
@@ -96,6 +100,8 @@ class MusicSearch(Vertical):
                 0.5, lambda: self.animate_fetcthig(text)
             )
 
+            self.progress_bar.visible = True
+
             self.start_playback_worker(videoId, song_title)
 
         else:
@@ -113,11 +119,14 @@ class MusicSearch(Vertical):
         while self.player.player.duration is not None:
             total_seconds = self.player.player.duration
 
-
             # The time that has gone by will be the total time minus time remain
             # Basic Math, if there are 5 seconds remaining and the total is 6
             # it becomes 2 / 6 which is correct
             seconds_remaining = total_seconds - self.player.player.time_remaining  # pyright: ignore
+
+            if self.progress_bar:
+                percentage = (seconds_remaining / total_seconds) * 100
+                self.progress_bar.progress = clamp(percentage, 0.0, 100.0)
 
             if total_seconds is not None and seconds_remaining is not None:
                 total_minutes, total_secs_mod = divmod(int(total_seconds), 60)
@@ -137,3 +146,7 @@ class MusicSearch(Vertical):
             from time import sleep
 
             sleep(1)
+
+
+def clamp(value: float, min_val: float, max_val: float) -> float:
+    return max(min_val, min(value, max_val))

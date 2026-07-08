@@ -2,7 +2,7 @@ import db
 from player import EstiaPlayer
 
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, Label
+from textual.widgets import Header, Footer
 
 # === Widgets ===
 from Widgets.Pomodoro import Pomodoro
@@ -36,7 +36,6 @@ class EstiaApp(App):
         search_widget.player = self.music
 
         yield search_widget
-        yield Label("")
         yield Footer()
 
 
