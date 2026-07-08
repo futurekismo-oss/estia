@@ -108,9 +108,32 @@ class MusicSearch(Vertical):
         self.player.player.wait_until_playing()
 
         self.is_fetching = False
-
         self.app.call_from_thread(self.loading_timer.stop)
 
-        self.app.call_from_thread(
-            self.app.query_one(Label).update, f"Playing {song_title}"
-        )
+        while self.player.player.duration is not None:
+            total_seconds = self.player.player.duration
+
+
+            # The time that has gone by will be the total time minus time remain
+            # Basic Math, if there are 5 seconds remaining and the total is 6
+            # it becomes 2 / 6 which is correct
+            seconds_remaining = total_seconds - self.player.player.time_remaining  # pyright: ignore
+
+            if total_seconds is not None and seconds_remaining is not None:
+                total_minutes, total_secs_mod = divmod(int(total_seconds), 60)
+                total_time = f"{total_minutes}:{total_secs_mod:02d}"
+
+                minutes_remaining, secs_left_remaining = divmod(
+                    int(seconds_remaining), 60
+                )
+                remaining_time = f"{minutes_remaining}:{secs_left_remaining:02d}"
+
+                self.app.call_from_thread(
+                    self.app.query_one(Label).update,
+                    f"Playing {song_title} [{remaining_time} / {total_time}]",
+                )
+
+            # Sleep for a second so as not max out our poor cpu
+            from time import sleep
+
+            sleep(1)

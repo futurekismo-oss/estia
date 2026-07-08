@@ -9,7 +9,7 @@ class Pomodoro(Vertical):
     time = reactive(set_time_to_minutes * 60)  # 20 Seconds for now
 
     def on_mount(self) -> None:
-        self.digits = self.query_one("#time", Digits)  #  pyright: ignore
+        self.digits = self.query_one("#time", Digits)
         self.update_timer = self.set_interval(1 / 60, self.update_time, pause=True)
 
     def update_time(self):

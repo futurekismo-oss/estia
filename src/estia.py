@@ -26,7 +26,7 @@ class EstiaApp(App):
         db.init_database()
 
     def compose(self) -> ComposeResult:
-        self.music = EstiaPlayer()
+        self.music = EstiaPlayer(self)
 
         yield Header(show_clock=True, icon="󰔟", time_format="%I:%M %p", name="Estia")
 

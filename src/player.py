@@ -1,9 +1,13 @@
 import mpv
 from ytmusicapi import YTMusic
+from textual.widgets import Label
 
 
 class EstiaPlayer:
-    def __init__(self):
+    def __init__(self, app_instance):
+        self.app = (
+            app_instance  # Ensure your player class has a reference to the Textual app
+        )
         self.player = mpv.MPV(video=False, ytdl=True)
         self.ytmusic = YTMusic()
 
@@ -15,11 +19,17 @@ class EstiaPlayer:
                 reason_code = event_data["reason"]
 
                 if reason_code == b"eof" or reason_code == 0:
-                    print(
-                        "The song finished playing naturally! Put your next song logic here."
+                    self.app.call_from_thread(
+                        self.app.query_one(Label).update,
+                        "Song finished! Ready for the next one.",
+                    )
+                    self.app.call_from_thread(
+                        self.app.notify("Song finished! Ready for the next one")
                     )
                 elif reason_code == b"stop" or reason_code == 3:
-                    print("Playback was manually stopped.")
+                    self.app.call_from_thread(
+                        self.app.query_one(Label).update, "Playback stopped."
+                    )
 
     def search_songs(self, query: str, limit: int = 5):
         return self.ytmusic.search(query, filter="songs")[:limit]
