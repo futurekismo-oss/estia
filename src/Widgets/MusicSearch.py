@@ -1,5 +1,6 @@
 from player import EstiaPlayer
 
+
 from textual import work
 from textual.app import ComposeResult
 from textual.widgets import OptionList, Input, Label
@@ -12,6 +13,49 @@ class MusicSearch(Vertical):
     label: Label
     is_fetching: bool = False
     dot_count: int = 0
+
+    @work(thread=True)  # <- Works on another thread
+    def thread_safe_search_song(self, search_query: str, search_input: Input) -> None:
+        # ↓ Used to catch no internet errors
+        from requests.exceptions import ConnectionError as requestsConnectionError
+
+        try:
+            tracks = self.player.search_songs(search_query)
+        except requestsConnectionError:
+            tracks = None
+            self.app.call_from_thread(self.label.update, "Fetching Failed")
+            self.app.call_from_thread(
+                self.app.notify,
+                title="Fetching Failed",
+                timeout=5,
+                severity="error",
+                message="This app requires an internet connection to work, as it streams songs directly from youtube music. However, an offline mode is in the works",
+            )
+            return
+
+        self.app.call_from_thread(
+            self.update_results_ui, tracks, search_query, search_input
+        )
+
+    def update_results_ui(
+        self, tracks: list | None, search_query: str, search_input: Input
+    ) -> None:
+        results_list = self.query_one("#results-list", OptionList)
+        results_list.clear_options()
+        results_list.visible = True
+
+        if tracks:
+            search_input.value = ""
+            search_input.placeholder = "Results for: " + search_query
+            ui_options = [
+                Option(prompt=track["title"], id=track["videoId"]) for track in tracks
+            ]
+            results_list.add_options(ui_options)
+            results_list.highlighted = 0
+            results_list.focus()
+        else:
+            results_list.add_option("No results found.")
+            search_input.placeholder = "Search a song"
 
     def compose(self) -> ComposeResult:
         yield Input(placeholder="Search a song", type="text", id="search-bar")
@@ -33,40 +77,9 @@ class MusicSearch(Vertical):
             if not search_query:
                 return
 
-            self.label.update(f"Searching for {search_query}")
+            self.notify(f"Searching for {search_query}")
 
-            try:
-                tracks = self.player.search_songs(search_query)  # Search for the song
-            except ConnectionError:  # <- Doesnt work for some reason FIX
-                tracks = None
-                self.app.notify(
-                    "THis app requires internet to work, i'll add an offline mode later"
-                )
-
-            results_list = self.query_one("#results-list", OptionList)
-            results_list.clear_options()  # Safety: remove anything in results
-
-            results_list.visible = True
-
-            if tracks:
-                event.input.value = ""
-                event.input.placeholder = "Results for: " + search_query
-                ui_options = [
-                    Option(
-                        prompt=track["title"], id=track["videoId"]
-                    )  # for each of the track in tracks make a Option element and
-                    # append botht the track title and video id to it
-                    for track in tracks
-                ]
-
-                results_list.add_options(ui_options)
-
-                results_list.highlighted = 0
-
-                results_list.focus()
-            else:
-                results_list.add_option("No results found.")
-                event.input.placeholder = "Search a song"
+            self.thread_safe_search_song(search_query, event.input)
 
     def on_option_list_option_selected(self, event: OptionList.OptionSelected) -> None:
         song_title = event.option.prompt

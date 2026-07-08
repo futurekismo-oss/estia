@@ -36,7 +36,7 @@ class EstiaApp(App):
         search_widget.player = self.music
 
         yield search_widget
-        yield Label("Nothing has been selected yet")
+        yield Label("")
         yield Footer()
 
 
