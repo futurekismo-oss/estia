@@ -3,31 +3,40 @@ Screen {
   grid-size: 2 1;
 }
 
-
-
 Pomodoro {
   background: $secondary-background-darken-3;
   height: 100%;
   width: 100%;
   border: round $accent-darken-1;
   align: center middle;
+  padding: 1 2;
 }
 
 #track_progress {
   visibility: hidden;
-  height: 4;
+  height: 5;
 }
 
+ProgressBar * {
+  height: 5;
+}
 
+Select {
+  width: 35%;
+  dock: bottom;
+  align-horizontal: right; 
+  offset-x: 65%;
+  margin-bottom: 0;
+}
 
 #search-bar {
   margin-bottom: 1;
 }
 
 #time {
-  width: auto;
+  width: 25;
   height: auto;
-
+  margin-bottom: 1;
 }
 
 Header {
@@ -43,7 +52,6 @@ Footer {
 MusicSearch {
   content-align: center middle;
   margin: 1 2;
-
 }
 
 #results-list {
@@ -51,14 +59,18 @@ MusicSearch {
   margin-bottom: 1;
 }
 
-#start {
+.timer_btn {
+  margin: 0 4;
   width: auto;
   height: auto;
 }
 
+#start {
+
+}
+
 #stop {
-  width: auto;
-  height: auto;
+
   display: none;
 }
 
