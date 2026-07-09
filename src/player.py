@@ -27,8 +27,11 @@ class EstiaPlayer:
                         self.app.notify("Song finished! Ready for the next one")
                     )
 
-    def search_songs(self, query: str, limit: int = 5):
-        return self.ytmusic.search(query, filter="songs")[:limit]
+    def search_songs(self, query: str, limit: int = 10):
+        return self.ytmusic.search(
+            query,
+            filter="songs",
+        )[:limit]
 
     def play_song(self, video_id: str):
         youtube_link = f"https://www.youtube.com/watch?v={video_id}"
