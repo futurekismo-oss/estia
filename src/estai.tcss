@@ -12,19 +12,22 @@ Pomodoro {
   padding: 1 2;
 }
 
+#pause_music_btn {
+  margin-top: 1;
+  visibility: hidden;
+}
+
 #track_progress {
   visibility: hidden;
-  height: 5;
 }
 
 #playback_time_label {
   margin-left: 1;
+  margin-top: 1;
   visibility: hidden;
 }
 
-ProgressBar * {
-  height: 5;
-}
+
 
 Select {
   width: 35%;

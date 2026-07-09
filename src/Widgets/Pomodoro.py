@@ -4,10 +4,12 @@ from textual.reactive import reactive
 from textual.containers import Vertical
 from textual import on
 import time
+from Widgets.MusicSearch import MusicSearch
+from player import EstiaPlayer
 
 
 def min_to_sec(no: int) -> int:
-    return no * 60
+    return no  # <- Remeber to add * 60 back
 
 
 class Pomodoro(Vertical):
@@ -43,6 +45,7 @@ class Pomodoro(Vertical):
         self.pause_start = 0.0
         self.update_timer = self.set_interval(0.1, self.update_time, pause=True)
         self.current_stage_indicator = self.query_one("#current_stage_indicator", Label)
+        self.player: EstiaPlayer = self.app.query_one(MusicSearch).player
 
     def start_timer(self) -> None:
         if self.end_time == 0.0:
@@ -70,11 +73,15 @@ class Pomodoro(Vertical):
                     self.current_stage_index
                 ]
 
+                if not self.current_stage_index % 2:  # Is even
+                    self.player.player.volume = 0
+                    self.app.notify("Break, reducing volume")
+                else:
+                    self.player.player.volume = 100
+
                 self.current_stage_indicator.update(stage_name)
 
-                seconds_for_stage = min_to_sec(
-                    stage_minutes
-                )  # <- Remeber to add min_to_sec back
+                seconds_for_stage = min_to_sec(stage_minutes)
                 self.end_time = time.monotonic() + seconds_for_stage
 
                 self.time_left = seconds_for_stage
@@ -132,7 +139,5 @@ class Pomodoro(Vertical):
         self.current_stage_index = 0
 
         first_stage_name, first_stage_minutes = self.current_routine[0]
-        self.time_left = min_to_sec(
-            first_stage_minutes
-        )  # <- Remeber to add min_to_sec back
+        self.time_left = min_to_sec(first_stage_minutes)
         self.current_stage_indicator.update(first_stage_name)

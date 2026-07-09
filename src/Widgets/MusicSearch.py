@@ -1,10 +1,11 @@
 from player import EstiaPlayer
 
 from threading import Event
-from textual import work
+from textual import work, on
+from textual_thin_slider import ThinSlider
 from textual.app import ComposeResult
-from textual.widgets import OptionList, Input, Label, ProgressBar
-from textual.containers import Vertical, Horizontal
+from textual.widgets import OptionList, Input, Label, Button
+from textual.containers import Vertical
 from textual.widgets.option_list import Option
 
 
@@ -13,6 +14,8 @@ class MusicSearch(Vertical):
     label: Label
     is_fetching: bool = False
     dot_count: int = 0
+
+    BINDINGS = [("space", "toggle_pause", "Play/Pause")]
 
     @work(thread=True)  # <- Works on another thread
     def thread_safe_search_song(self, search_query: str, search_input: Input) -> None:
@@ -60,17 +63,30 @@ class MusicSearch(Vertical):
         yield Input(placeholder="Search a song", type="text", id="search-bar")
         yield OptionList(id="results-list")
         yield Label("", id="label")
-        with Horizontal():
-            yield ProgressBar(
-                total=100, show_percentage=False, show_eta=False, id="track_progress"
-            )
-            yield Label("[0:00 / 0:00]", id="playback_time_label")
+        yield ThinSlider(range_min=0, range_max=100, id="track_progress")
+        yield Label("[0:00 / 0:00]", id="playback_time_label")
+        yield Button("", variant="warning", id="pause_music_btn")
 
     def on_mount(self) -> None:
         self.label = self.query_one("#label", Label)
-        self.progress_bar = self.query_one("#track_progress", ProgressBar)
+        self.progress_bar = self.query_one("#track_progress", ThinSlider)
         self.stop_playback_work = Event()
         self.playback_time_label = self.query_one("#playback_time_label", Label)
+        self.pause_music_btn = self.query_one("#pause_music_btn", Button)
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "pause_music_btn":
+            self.action_toggle_pause()
+
+    def action_toggle_pause(self):
+        self.pause_music_btn.label = "" if self.player.player.pause else ""
+        self.player.player.pause = not self.player.player.pause
+
+    @on(ThinSlider.Changed, "#track_progress")
+    def on_timeline_drag(self, event: ThinSlider.Changed) -> None:
+        if event.control.has_focus:
+            if not self.is_fetching:
+                self.player.player.seek(event.value, reference="absolute-percent")
 
     def animate_fetcthig(self, base_str: str) -> None:
         if not self.is_fetching:
@@ -102,7 +118,9 @@ class MusicSearch(Vertical):
                 except Exception:
                     pass
 
-            self.progress_bar.progress = 0.0  # Reset progress i play smth before
+            self.progress_bar.value = (  # ty: ignore
+                0.0  # Reset progress i play smth before
+            )
 
             self.dot_count = 0
             self.is_fetching = True
@@ -114,9 +132,6 @@ class MusicSearch(Vertical):
             self.loading_timer = self.set_interval(
                 0.5, lambda: self.animate_fetcthig(text)
             )
-
-            self.playback_time_label.visible = True
-            self.progress_bar.visible = True
 
             self.stop_playback_work.clear()
             self.start_playback_worker(videoId, song_title)
@@ -135,10 +150,16 @@ class MusicSearch(Vertical):
 
         while self.player.player.duration is not None:
             if self.stop_playback_work.is_set():
-                self.app.call_from_thread(setattr, self.progress_bar, "progress", 0.0)
+                self.app.call_from_thread(setattr, self.progress_bar, "value", 0.0)
                 break
 
             total_seconds = self.player.player.duration
+
+            self.app.call_from_thread(setattr, self.pause_music_btn, "visible", True)
+            self.app.call_from_thread(
+                setattr, self.playback_time_label, "visible", True
+            )
+            self.app.call_from_thread(setattr, self.progress_bar, "visible", True)
 
             # The time that has gone by will be the total time minus time remain
             # Basic Math, if there are 5 seconds remaining and the total is 6
@@ -150,7 +171,7 @@ class MusicSearch(Vertical):
                 self.app.call_from_thread(
                     setattr,
                     self.progress_bar,
-                    "progress",
+                    "value",
                     clamp(percentage, 0.0, 100.0),
                 )
 
