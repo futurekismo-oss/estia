@@ -17,6 +17,11 @@ Pomodoro {
   height: 5;
 }
 
+#playback_time_label {
+  margin-left: 1;
+  visibility: hidden;
+}
+
 ProgressBar * {
   height: 5;
 }

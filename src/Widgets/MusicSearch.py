@@ -1,10 +1,10 @@
 from player import EstiaPlayer
 
-
+from threading import Event
 from textual import work
 from textual.app import ComposeResult
 from textual.widgets import OptionList, Input, Label, ProgressBar
-from textual.containers import Vertical
+from textual.containers import Vertical, Horizontal
 from textual.widgets.option_list import Option
 
 
@@ -60,13 +60,17 @@ class MusicSearch(Vertical):
         yield Input(placeholder="Search a song", type="text", id="search-bar")
         yield OptionList(id="results-list")
         yield Label("", id="label")
-        yield ProgressBar(
-            total=100, show_percentage=False, show_eta=False, id="track_progress"
-        )
+        with Horizontal():
+            yield ProgressBar(
+                total=100, show_percentage=False, show_eta=False, id="track_progress"
+            )
+            yield Label("[0:00 / 0:00]", id="playback_time_label")
 
     def on_mount(self) -> None:
         self.label = self.query_one("#label", Label)
         self.progress_bar = self.query_one("#track_progress", ProgressBar)
+        self.stop_playback_work = Event()
+        self.playback_time_label = self.query_one("#playback_time_label", Label)
 
     def animate_fetcthig(self, base_str: str) -> None:
         if not self.is_fetching:
@@ -89,19 +93,32 @@ class MusicSearch(Vertical):
         song_title = event.option.prompt
         videoId = event.option.id
 
-        if videoId:
+        if videoId and song_title:
+            self.stop_playback_work.set()
+
+            if hasattr(self, "loading_timer"):
+                try:
+                    self.loading_timer.stop()
+                except Exception:
+                    pass
+
+            self.progress_bar.progress = 0.0  # Reset progress i play smth before
+
             self.dot_count = 0
             self.is_fetching = True
 
             text = f"Fetching {song_title}"
+            print(f"Song title: {song_title}")
             self.label.update(text)
 
             self.loading_timer = self.set_interval(
                 0.5, lambda: self.animate_fetcthig(text)
             )
 
+            self.playback_time_label.visible = True
             self.progress_bar.visible = True
 
+            self.stop_playback_work.clear()
             self.start_playback_worker(videoId, song_title)
 
         else:
@@ -117,6 +134,10 @@ class MusicSearch(Vertical):
         self.app.call_from_thread(self.loading_timer.stop)
 
         while self.player.player.duration is not None:
+            if self.stop_playback_work.is_set():
+                self.app.call_from_thread(setattr, self.progress_bar, "progress", 0.0)
+                break
+
             total_seconds = self.player.player.duration
 
             # The time that has gone by will be the total time minus time remain
@@ -126,7 +147,12 @@ class MusicSearch(Vertical):
 
             if self.progress_bar:
                 percentage = (seconds_remaining / total_seconds) * 100
-                self.progress_bar.progress = clamp(percentage, 0.0, 100.0)
+                self.app.call_from_thread(
+                    setattr,
+                    self.progress_bar,
+                    "progress",
+                    clamp(percentage, 0.0, 100.0),
+                )
 
             if total_seconds is not None and seconds_remaining is not None:
                 total_minutes, total_secs_mod = divmod(int(total_seconds), 60)
@@ -139,7 +165,12 @@ class MusicSearch(Vertical):
 
                 self.app.call_from_thread(
                     self.label.update,
-                    f"Playing {song_title} [{remaining_time} / {total_time}]",
+                    f"Playing {song_title}",
+                )
+
+                self.app.call_from_thread(
+                    self.playback_time_label.update,
+                    f"[{remaining_time} / {total_time}]",
                 )
 
             # Sleep for a second so as not max out our poor cpu

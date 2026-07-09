@@ -26,10 +26,6 @@ class EstiaPlayer:
                     self.app.call_from_thread(
                         self.app.notify("Song finished! Ready for the next one")
                     )
-                elif reason_code == b"stop" or reason_code == 3:
-                    self.app.call_from_thread(
-                        self.app.query_one("#label", Label).update, "Playback stopped."
-                    )
 
     def search_songs(self, query: str, limit: int = 5):
         return self.ytmusic.search(query, filter="songs")[:limit]
