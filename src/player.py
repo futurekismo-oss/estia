@@ -20,7 +20,7 @@ class EstiaPlayer:
 
                 if reason_code == b"eof" or reason_code == 0:
                     self.app.call_from_thread(
-                        self.app.query_one(Label).update,
+                        self.app.query_one("#label", Label).update,
                         "Song finished! Ready for the next one.",
                     )
                     self.app.call_from_thread(
@@ -28,7 +28,7 @@ class EstiaPlayer:
                     )
                 elif reason_code == b"stop" or reason_code == 3:
                     self.app.call_from_thread(
-                        self.app.query_one(Label).update, "Playback stopped."
+                        self.app.query_one("#label", Label).update, "Playback stopped."
                     )
 
     def search_songs(self, query: str, limit: int = 5):

@@ -138,7 +138,7 @@ class MusicSearch(Vertical):
                 remaining_time = f"{minutes_remaining}:{secs_left_remaining:02d}"
 
                 self.app.call_from_thread(
-                    self.app.query_one(Label).update,
+                    self.label.update,
                     f"Playing {song_title} [{remaining_time} / {total_time}]",
                 )
 
