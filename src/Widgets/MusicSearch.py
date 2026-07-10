@@ -56,7 +56,6 @@ class MusicSearch(Vertical):
             results_list.highlighted = 0
             results_list.focus()
         else:
-            results_list.add_option("No results found.")
             search_input.placeholder = "Search a song"
 
     def compose(self) -> ComposeResult:
