@@ -9,7 +9,7 @@ from player import EstiaPlayer
 
 
 def min_to_sec(no: int) -> int:
-    return no  # <- Remeber to add * 60 back
+    return no * 60  # <- Remeber to add * 60 back
 
 
 class Pomodoro(Vertical):

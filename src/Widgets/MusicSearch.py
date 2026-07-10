@@ -86,7 +86,14 @@ class MusicSearch(Vertical):
     def on_timeline_drag(self, event: ThinSlider.Changed) -> None:
         if event.control.has_focus:
             if not self.is_fetching:
-                self.player.player.seek(event.value, reference="absolute-percent")
+                was_paused = self.player.player.pause
+
+                self.player.player.pause = True
+
+                self.player.player.seek(event.value, "absolute-percent")
+
+                if not was_paused:
+                    self.player.player.pause = False
 
     def animate_fetcthig(self, base_str: str) -> None:
         if not self.is_fetching:
@@ -118,9 +125,13 @@ class MusicSearch(Vertical):
                 except Exception:
                     pass
 
-            self.progress_bar.value = (  # ty: ignore
-                0.0  # Reset progress i play smth before
-            )
+            if self.is_fetching:
+                self.progress_bar.visible = False
+                self.pause_music_btn.visible = False
+                self.playback_time_label.visible = False
+
+            # Reset progress i play smth before
+            self.progress_bar.value = 0.0  # ty: ignore
 
             self.dot_count = 0
             self.is_fetching = True
