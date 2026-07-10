@@ -7,6 +7,7 @@ from textual.app import ComposeResult
 from textual.widgets import OptionList, Input, Label, Button
 from textual.containers import Vertical
 from textual.widgets.option_list import Option
+from Widgets.Playlist import Playlist
 
 
 class MusicSearch(Vertical):
@@ -72,6 +73,7 @@ class MusicSearch(Vertical):
         self.stop_playback_work = Event()
         self.playback_time_label = self.query_one("#playback_time_label", Label)
         self.pause_music_btn = self.query_one("#pause_music_btn", Button)
+        self.playlist_instance = self.app.query_one(Playlist)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "pause_music_btn":
@@ -144,7 +146,8 @@ class MusicSearch(Vertical):
             )
 
             self.stop_playback_work.clear()
-            self.start_playback_worker(videoId, song_title)
+            self.playlist_instance.add_track_safely(song_title, videoId)  # ty: ignore
+            # self.start_playback_worker(videoId, song_title)
 
         else:
             self.label.update("Selected a placeholder or invalid track.")
