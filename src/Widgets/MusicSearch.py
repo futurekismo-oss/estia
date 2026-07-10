@@ -120,11 +120,11 @@ class MusicSearch(Vertical):
         if videoId and song_title:
             self.stop_playback_work.set()
 
-            if hasattr(self, "loading_timer"):
-                try:
-                    self.loading_timer.stop()
-                except Exception:
-                    pass
+            # if hasattr(self, "loading_timer"):
+            #     try:
+            #         # self.loading_timer.stop()
+            #     except Exception:
+            #         pass
 
             if self.is_fetching:
                 self.progress_bar.visible = False
@@ -137,13 +137,13 @@ class MusicSearch(Vertical):
             self.dot_count = 0
             self.is_fetching = True
 
-            text = f"Fetching {song_title}"
-            print(f"Song title: {song_title}")
-            self.label.update(text)
-
-            self.loading_timer = self.set_interval(
-                0.5, lambda: self.animate_fetcthig(text)
-            )
+            # text = f"Fetching {song_title}"
+            # print(f"Song title: {song_title}")
+            # self.label.update(text)
+            #
+            # self.loading_timer = self.set_interval(
+            #     0.5, lambda: self.animate_fetcthig(text)
+            # )
 
             self.stop_playback_work.clear()
             self.playlist_instance.add_track_safely(song_title, videoId)  # ty: ignore
@@ -159,7 +159,7 @@ class MusicSearch(Vertical):
         self.player.player.wait_until_playing()
 
         self.is_fetching = False
-        self.app.call_from_thread(self.loading_timer.stop)
+        # self.app.call_from_thread(self.loading_timer.stop)
 
         while self.player.player.duration is not None:
             if self.stop_playback_work.is_set():
