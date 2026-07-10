@@ -27,7 +27,7 @@ class EstiaPlayer:
                         self.app.notify("Song finished! Ready for the next one")
                     )
 
-    def search_songs(self, query: str, limit: int = 10):
+    def search_songs(self, query: str, limit: int = 5):
         return self.ytmusic.search(
             query,
             filter="songs",
