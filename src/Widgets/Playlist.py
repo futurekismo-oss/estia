@@ -53,5 +53,3 @@ class Playlist(Vertical):
         self.playlist = [t for t in self.playlist if t[1] != track_item.track_id]
 
         track_item.remove()
-
-        self.app.notify(f"Removed: {track_item.title}")
