@@ -5,7 +5,7 @@ from textual.app import ComposeResult
 
 
 class PlaylistTrackItem(ListItem):
-    """A custom ListItem that knows its own track metadata."""
+    # A custom ListItem that knows its own track metadata.
 
     def __init__(self, title: str, track_id: str, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -13,14 +13,12 @@ class PlaylistTrackItem(ListItem):
         self.track_id = track_id
 
     def compose(self) -> ComposeResult:
-        yield Label(f"❌ {self.title}")
+        yield Label(f"󰆴 {self.title}")
 
     def on_click(self) -> None:
         self.post_message(self.DeleteRequested(self))
 
     class DeleteRequested(Message):
-        """Custom event message sent when an item wants to delete itself."""
-
         def __init__(self, track_item: "PlaylistTrackItem") -> None:
             super().__init__()
             self.track_item = track_item
@@ -49,7 +47,7 @@ class Playlist(Vertical):
     def on_playlist_track_item_delete_requested(
         self, event: PlaylistTrackItem.DeleteRequested
     ) -> None:
-        """Handles the delete request message bubbling up from the clicked track."""
+        # Handles the delete request message bubbling up from the clicked track.
         track_item = event.track_item
 
         self.playlist = [t for t in self.playlist if t[1] != track_item.track_id]
