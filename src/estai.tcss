@@ -13,13 +13,28 @@ Pomodoro {
   padding: 1 2;
 }
 
-#pause_music_btn {
-  margin-top: 1;
-  visibility: hidden;
+.tiny_btn {
+  min-width: 0;
+  min-height: 0;
+  width: 3;
+  height: 1;
+  border: none;
+  padding: 0;
+  margin-right: 2;
+  margin_top: 1;
 }
 
+
+#popup {
+  layer: overlay;
+  width: auto;
+}
+
+
+
+
 #track_progress {
-  visibility: hidden;
+  margin-top: 1;
 }
 
 #playback_time_label {

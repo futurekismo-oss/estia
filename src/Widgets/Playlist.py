@@ -31,11 +31,9 @@ class Playlist(Vertical):
 
     def compose(self) -> ComposeResult:
         yield ListView(id="playlist_list")
-        yield Label("Working", id="playlist_label")
 
     def on_mount(self) -> None:
         self.playlist_list = self.query_one("#playlist_list", ListView)
-        self.playlist_label = self.query_one("#playlist_label", Label)
 
     def add_track_safely(self, title: str, track_id: str) -> None:
         self.playlist.append((title, track_id))

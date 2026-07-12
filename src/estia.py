@@ -1,25 +1,17 @@
 import db
+import json
 from player import EstiaPlayer
 
-from textual import work
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, OptionList, Label, ListView
-from textual.geometry import Offset
-
-
-from textual_drivers._dnd_app import Drop, DropData
-from textual_drivers.dnd import (
-    DNDApp,
-    DNDDragOutOperation,
-    DragOutFinished,
-    DNDDragIn,
-    DNDDragInOperation,
-)
+from textual.widgets import Header, Footer, ListView, Static
+from textual import work, events, on
+from textual.css.query import NoMatches
+import contextlib
 
 
 # === Widgets ===
 from Widgets.Pomodoro import Pomodoro
-from Widgets.MusicSearch import MusicSearch
+from Widgets.MusicSearch import MusicSearch, ResultsList
 from Widgets.Playlist import Playlist
 
 
@@ -29,7 +21,10 @@ def set_window_title(title: str) -> None:
 
 
 # === Main App ===
-class EstiaApp(DNDApp, App):
+class EstiaApp(App):
+    was_mouse_down_on_playlist: bool = False
+    songs_to_drop: list[str] = []
+
     TITLE = "Estia"
 
     CSS_PATH = "estai.tcss"
@@ -42,6 +37,7 @@ class EstiaApp(DNDApp, App):
         self.playlist_instance = self.app.query_one(Playlist)
 
     def compose(self) -> ComposeResult:
+
         self.music = EstiaPlayer(self)
 
         yield Header(show_clock=True, icon="󰔟", time_format="%I:%M %p", name="Estia")
@@ -53,78 +49,55 @@ class EstiaApp(DNDApp, App):
 
         yield search_widget
 
-        yield Playlist()
+        yield Playlist(id="playlist")
         yield Footer()
 
-    async def dnd_drag_out_operation(self, pos: Offset) -> DNDDragOutOperation | None:
-        results_list = self.app.query_one(OptionList)
+    @on(events.MouseDown)
+    def on_mouse_down_on_playlist(self, event: events.MouseDown) -> None:
 
-        if not results_list.region.contains(*pos):
-            return
+        if (
+            (self.screen.get_widget_at(event.screen_x, event.screen_y)[0]).id
+            == "results_list"
+        ):
+            self.was_mouse_down_on_playlist = True
 
-        mouse_hovering = results_list._mouse_hovering_over
-
-        if not mouse_hovering:
-            return None
-
-        selected = results_list.get_option_at_index(mouse_hovering)
-
-        if not selected:
-            return None
-
-        name = [selected.id]
-
-        text = str(selected.prompt)
-
-        return DNDDragOutOperation(name, "copy", text, 1)  # ty: ignore
-
-    async def on_drag_out_finished(self, event: DragOutFinished) -> None:
-        pass
-
+    @on(events.MouseUp)
     @work
-    async def on_drop(self, event: Drop) -> None:
-        self.request_data(event, 0, close=True)
+    async def on_mouse_up_on_anything(self, event: events.MouseUp) -> None:
+        self.was_mouse_down_on_playlist = False
 
-    def on_drop_data(self, event: DropData) -> None:
-        results_list = self.app.query_one(OptionList)
-        if not results_list:
-            return
+        with contextlib.suppress(NoMatches):
+            await self.query_one("#popup", Static).remove()
+        # forced to do this, because popup doesn't actually get removed asap, im not sure why
+        self.call_after_refresh(self.handle_drop, event)  # <- I'll do it later
 
-        answer = None
-        if isinstance(event.data, list) and event.data:
-            dropped_id = event.data[0]
-        else:
-            dropped_id = event.data
+    def handle_drop(self, event: events.MouseUp) -> None:
 
-        for index in range(results_list.option_count):
-            option = results_list.get_option_at_index(index)
-            if option.id == dropped_id:
-                answer = option
-                break
+        if (
+            self.screen.get_widget_at(event.screen_x, event.screen_y)[0].id
+            == "playlist_list"
+        ):
+            playlist = self.app.query_one("#results_list", ResultsList)
+            result_list = self.app.query_one("#playlist", Playlist)
+            for tracks in playlist.selected:
+                track_data = json.loads(tracks)
 
-        if answer:
-            self.playlist_instance.add_track_safely(answer.prompt, answer.id)  # ty:ignore
-        else:
-            self.app.notify("Dropped item not found")
+                result_list.add_track_safely(track_data["title"], track_data["videoId"])
+            playlist.deselect_all()
 
-    async def on_dnddrag_in(self, event: DNDDragIn) -> None:
-        label = self.app.query_one("#playlist_label", Label)
-
-        if self.zone.region.contains(*event.pos):
-            label.update("In region")
-        else:
-            label.update("Out of region")
-
-    async def dnd_drag_in_operation(
-        self, event: DNDDragIn
-    ) -> DNDDragInOperation | bool:
-        is_accepted = self.zone.region.contains(*event.pos)
-
-        return DNDDragInOperation(
-            accepted=is_accepted,
-            op="either",
-            mimes=event.mimes,
-        )
+    @on(events.MouseMove)
+    @work
+    async def on_mouse_move(self, event: events.MouseMove) -> None:
+        if self.was_mouse_down_on_playlist:
+            if not self.query("#popup"):
+                playlist = self.app.query_one("#results_list", ResultsList)
+                await self.mount(
+                    popup := Static(f"{len(playlist.selected)} songs", id="popup")
+                )
+                self.songs_to_drop = playlist.selected
+            else:
+                popup = self.query_one("#popup", Static)
+            popup.offset = (event.screen_x, event.screen_y)
 
 
 if __name__ == "__main__":
