@@ -75,7 +75,7 @@ jobs:
         if: matrix.target == 'windows'
         shell: bash
         run: |
-          curl -L -o mpv-dev.7z https://sourceforge.net/projects/mpv-player-windows/files/libmpv/mpv-dev-x86_64-20241027-git-456cb04.7z/download
+          curl -L -o mpv-dev.7z https://github.com/shinchiro/mpv-winbuild-cmake/releases/download/20260610/mpv-dev-x86_64-20260610-git-304426c.7z
           7z x mpv-dev.7z -ompv_libs
           echo "MPV_DIR=$(pwd)/mpv_libs" >> $GITHUB_ENV
 
