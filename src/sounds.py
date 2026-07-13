@@ -1,6 +1,10 @@
 import os
 from pygame import mixer
 
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
+
 
 class Sfx:
     def __init__(self):
@@ -15,3 +19,6 @@ class Sfx:
     def play_sound(self, sound):
         if sound:
             sound.play()
+
+    def get_sfx_asset(self, filename: str) -> str:
+        return str(BASE_DIR / "assets" / filename)

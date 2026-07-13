@@ -11,11 +11,6 @@ from sounds import Sfx
 
 from Widgets.Playlist import Playlist
 from threading import Event
-from pathlib import Path
-
-
-BASE_DIR = Path(__file__).resolve().parent
-SOUND_PATH = BASE_DIR / "sounds" / "bell.mp3"
 
 
 def min_to_sec(no: int) -> int:
@@ -34,7 +29,7 @@ class FloatingScreen(Static):
 
     DEFAULT_CSS = """
     FloatingScreen {
-        width: 21;
+        width: 25;
         height: 7;
         margin: 2 4;
         background: $panel;
@@ -51,6 +46,7 @@ class FloatingScreen(Static):
 
         self.music_title_label = self.query_one("#label", Label)
         self.progress_bar = self.query_one("#track_progress", ThinSlider)
+        self.playback_time_label = self.query_one("#playback_time_label", Label)
         self.stop_playback_work = Event()
 
     def compose(self) -> ComposeResult:
@@ -58,11 +54,12 @@ class FloatingScreen(Static):
         yield ThinSlider(range_min=0, range_max=100, id="track_progress")
         with Horizontal():
             yield Button(
-                "-", variant="success", classes="tiny_btn", id="play_music_btn"
+                "", variant="success", classes="tiny_btn", id="play_music_btn"
             )
             yield Button(
                 "", variant="warning", classes="tiny_btn", id="pause_music_btn"
             )
+            yield Label("[0:00 / 0:00]", id="playback_time_label")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "pause_music_btn":
@@ -102,7 +99,6 @@ class FloatingScreen(Static):
         self.play_current_selection()
 
     def action_toggle_pause(self):
-        self.pause_music_btn.label = "" if self.player.player.pause else ""
         self.player.player.pause = not self.player.player.pause
 
     @on(ThinSlider.Changed, "#track_progress")
@@ -142,6 +138,19 @@ class FloatingScreen(Static):
                     clamp(percentage, 0.0, 100.0),
                 )
 
+            if total_seconds is not None and seconds_remaining is not None:
+                total_minutes, total_secs_mod = divmod(int(total_seconds), 60)
+                total_time = f"{total_minutes}:{total_secs_mod:02d}"
+
+                minutes_remaining, secs_left_remaining = divmod(
+                    int(seconds_remaining), 60
+                )
+                remaining_time = f"{minutes_remaining}:{secs_left_remaining:02d}"
+                self.app.call_from_thread(
+                    self.playback_time_label.update,
+                    f"[{remaining_time} / {total_time}]",
+                )
+
             # Sleep for a second so as not max out our poor cpu
             from time import sleep
 
@@ -155,7 +164,6 @@ class FloatingScreen(Static):
 
 class Pomodoro(Vertical):
     POMODORO_ROUTINES = {
-        5: [("Work", 1), ("Break", 1)],
         45: [("Work", 15), ("Break", 10), ("Work", 15)],
         60: [("Work", 25), ("Break", 5), ("Work", 25), ("Break", 5)],
         120: [
@@ -170,7 +178,7 @@ class Pomodoro(Vertical):
         ],
     }
 
-    pomodoro_times = [("5 min", 5), ("45 min", 45), ("1 hr", 60), ("2 hrs", 120)]
+    pomodoro_times = [("45 min", 45), ("1 hr", 60), ("2 hrs", 120)]
 
     time_left: int = reactive(min_to_sec(45))  # ty: ignore
 
@@ -188,7 +196,9 @@ class Pomodoro(Vertical):
 
         self.mixer = Sfx()
         if hasattr(pygame, "mixer") and pygame.mixer.get_init():
-            self.break_sound = self.mixer.load_sound(str(SOUND_PATH))
+            self.break_sound = self.mixer.load_sound(
+                self.mixer.get_sfx_asset("bell.mp3")
+            )
         else:
             self.break_sound = None
 

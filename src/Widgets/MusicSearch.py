@@ -51,14 +51,12 @@ class MusicSearch(Vertical):
         self.playlist_instance = self.app.query_one(Playlist)
         self.results_list = self.app.query_one("#results_list", ResultsList)
 
-
         self.stop_playback_work = Event()
 
     def compose(self) -> ComposeResult:
         yield Input(placeholder="Search a song", type="text", id="search-bar")
         yield ResultsList(id="results_list")
         yield Label("", id="label")
-        yield Label("[0:00 / 0:00]", id="playback_time_label")
         # yield Button("", variant="warning", id="pause_music_btn")
 
     def animate_fetcthig(self, base_str: str) -> None:
@@ -78,66 +76,7 @@ class MusicSearch(Vertical):
 
             self.thread_safe_search_song(search_query, event.input)
 
-    # @work(thread=True)  # runs on a different thread
-    # def start_playback_worker(self, video_id: str, song_title: str) -> None:
-    #     self.player.play_song(video_id)  # so as not the block the main UI loop
-    #
-    #     self.player.player.wait_until_playing()
-    #
-    #     self.is_fetching = False
-    #     # self.app.call_from_thread(self.loading_timer.stop)
-    #
-    #     while self.player.player.duration is not None:
-    #         if self.stop_playback_work.is_set():
-    #             self.app.call_from_thread(setattr, self.progress_bar, "value", 0.0)
-    #             break
-    #
-    #         total_seconds = self.player.player.duration
-    #
-    #         # self.app.call_from_thread(setattr, self.pause_music_btn, "visible", True)
-    #         self.app.call_from_thread(
-    #             setattr, self.playback_time_label, "visible", True
-    #         )
-    #         self.app.call_from_thread(setattr, self.progress_bar, "visible", True)
-    #
-    #         # The time that has gone by will be the total time minus time remain
-    #         # Basic Math, if there are 5 seconds remaining and the total is 6
-    #         # it becomes 2 / 6 which is correct
-    #         seconds_remaining = total_seconds - self.player.player.time_remaining  # pyright: ignore
-    #
-    #         if self.progress_bar:
-    #             percentage = (seconds_remaining / total_seconds) * 100
-    #             self.app.call_from_thread(
-    #                 setattr,
-    #                 self.progress_bar,
-    #                 "value",
-    #                 clamp(percentage, 0.0, 100.0),
-    #             )
-    #
-    #         if total_seconds is not None and seconds_remaining is not None:
-    #             total_minutes, total_secs_mod = divmod(int(total_seconds), 60)
-    #             total_time = f"{total_minutes}:{total_secs_mod:02d}"
-    #
-    #             minutes_remaining, secs_left_remaining = divmod(
-    #                 int(seconds_remaining), 60
-    #             )
-    #             remaining_time = f"{minutes_remaining}:{secs_left_remaining:02d}"
-    #
-    #             self.app.call_from_thread(
-    #                 self.label.update,
-    #                 f"Playing {song_title}",
-    #             )
-    #
-    #             self.app.call_from_thread(
-    #                 self.playback_time_label.update,
-    #                 f"[{remaining_time} / {total_time}]",
-    #             )
-    #
-    #         # Sleep for a second so as not max out our poor cpu
-    #         from time import sleep
-    #
-    #         sleep(1)
-
+    
     @work(thread=True)  # <- Works on another thread
     def thread_safe_search_song(self, search_query: str, search_input: Input) -> None:
         # ↓ Used to catch no internet errors
