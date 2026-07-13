@@ -45,10 +45,10 @@ jobs:
         run: |
           mkdir -p AppDir/usr/bin
           mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
-
+          
           cp -r build/estia.dist/* AppDir/usr/bin/
           ln -s usr/bin/estia AppDir/AppRun
-
+          
           cat <<EOF > AppDir/estia.desktop
           [Desktop Entry]
           Name=Estia
@@ -57,15 +57,14 @@ jobs:
           Type=Application
           Categories=Utility;
           EOF
-
+          
           cp icon.png AppDir/estia.png
           cp icon.png AppDir/usr/share/icons/hicolor/256x256/apps/estia.png
-
+          
           curl -L -o appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool
           ./appimagetool --appimage-extract
           ./squashfs-root/AppRun AppDir Estia-x86_64.AppImage
-
 
       - name: Download Windows C Dependencies
         if: matrix.target == 'windows'
@@ -73,15 +72,12 @@ jobs:
         run: |
           curl -L -o mpv-dev.7z https://github.com/shinchiro/mpv-winbuild-cmake/releases/download/20260610/mpv-dev-x86_64-20260610-git-304426c.7z
           7z x mpv-dev.7z -ompv_libs
-          $mpv = Get-ChildItem -Path $PWD -Filter 'mpv-1.dll' -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          $mpv = Get-ChildItem -Path mpv_libs -Filter 'mpv-1.dll' -Recurse | Select-Object -First 1
           if (-not $mpv) {
-            Write-Error 'mpv-1.dll not found after extracting mpv-dev.7z'
+            Write-Error 'mpv-1.dll not found'
             exit 1
           }
-
-          echo "MPV_DLL=$($mpv.FullName)" >> $env:GITHUB_ENV
-          echo "MPV_DIR=$($mpv.DirectoryName)" >> $env:GITHUB_ENV
-
+          Copy-Item $mpv.FullName -Destination .
 
       - name: Nuitka Compile (Windows Onefile)
         if: matrix.target == 'windows'
@@ -91,8 +87,7 @@ jobs:
           script-name: src/estia.py
           mode: onefile
           include-package: mpv
-          include-data-files: ${{ env.MPV_DLL }}=mpv-1.dll
-
+          include-data-files: mpv-1.dll=mpv-1.dll
 
       - name: Upload Linux Artifact
         if: matrix.target == 'linux'
