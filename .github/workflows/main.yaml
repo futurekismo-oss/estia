@@ -1,18 +1,9 @@
-name: Compile Cross-Platform Application
+name: Compile Linux AppImage
 on: [push]
 
 jobs:
   build:
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-22.04
-            target: linux
-            artifact-name: estia-linux-appimage
-          - os: windows-latest
-            target: windows
-            artifact-name: estia-windows-exe
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v4
@@ -25,13 +16,11 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Install Linux C Dependencies
-        if: matrix.target == 'linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y libmpv-dev fuse
 
       - name: Nuitka Compile (Linux Standalone)
-        if: matrix.target == 'linux'
         uses: Nuitka/Nuitka-Action@main
         with:
           nuitka-version: main
@@ -41,7 +30,6 @@ jobs:
           include-data-files: /usr/lib/x86_64-linux-gnu/libmpv.so=libmpv.so
 
       - name: Structure & Package AppImage
-        if: matrix.target == 'linux'
         run: |
           mkdir -p AppDir/usr/bin
           mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
@@ -66,54 +54,8 @@ jobs:
           ./appimagetool --appimage-extract
           ./squashfs-root/AppRun AppDir Estia-x86_64.AppImage
 
-      - name: Download Windows C Dependencies
-        if: matrix.target == 'windows'
-        shell: pwsh
-        run: |
-          curl -L -o mpv-dev.7z https://github.com/shinchiro/mpv-winbuild-cmake/releases/download/20260610/mpv-dev-x86_64-20260610-git-304426c.7z
-          7z x mpv-dev.7z -ompv_libs
-
-          $possiblePaths = @('mpv_libs/bin/mpv-1.dll', 'mpv_libs/mpv-1.dll', 'mpv_libs/*/mpv-1.dll')
-          $mpv = $null
-
-          foreach ($path in $possiblePaths) {
-            $found = Get-Item -Path $path -ErrorAction SilentlyContinue
-            if ($found) {
-              $mpv = $found
-              break
-            }
-          }
-
-          if (-not $mpv) {
-            $mpv = Get-ChildItem -Path mpv_libs -Filter 'mpv-1.dll' -Recurse | Select-Object -First 1
-          }
-
-          if (-not $mpv) {
-            Write-Error 'mpv-1.dll not found'
-            exit 1
-          }
-          Copy-Item $mpv.FullName -Destination .
-
-      - name: Nuitka Compile (Windows Onefile)
-        if: matrix.target == 'windows'
-        uses: Nuitka/Nuitka-Action@main
-        with:
-          nuitka-version: main
-          script-name: src/estia.py
-          mode: onefile
-          include-package: mpv
-          include-data-files: mpv-1.dll=mpv-1.dll
-
       - name: Upload Linux Artifact
-        if: matrix.target == 'linux'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact-name }}
+          name: estia-linux-appimage
           path: Estia-x86_64.AppImage
-
-      - name: Upload Windows Artifact
-        if: matrix.target == 'windows'
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact-name }}
-          path: build/estia.exe
