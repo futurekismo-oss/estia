@@ -8,7 +8,7 @@ class Sfx:
 
     def load_sound(self, file_path: str) -> mixer.Sound:
         if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Audo file {file_path} not found ")
+            raise FileNotFoundError(f"Audio file {file_path} not found ")
 
         return mixer.Sound(file_path)
 

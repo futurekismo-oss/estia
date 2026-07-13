@@ -1,0 +1,14 @@
+[project]
+name = "estia"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "pygame-ce>=2.5.7",
+    "python-mpv==1.0.8",
+    "requests==2.34.2",
+    "textual==8.2.8",
+    "textual-thin-slider==1.0.1",
+    "ytmusicapi==1.12.1",
+]

@@ -16,15 +16,9 @@ from Widgets.Pomodoro import Pomodoro
 from Widgets.MusicSearch import MusicSearch, ResultsList
 from Widgets.Playlist import Playlist
 
-# === Building sheningans ===
-if hasattr(sys, "nuitka_srcdir"):
-    if os.path.exists(os.path.join(sys.nuitka_srcdir, "libmpv.so")):
-        os.environ["MPV_LD_LIBRARY_PATH"] = sys.nuitka_srcdir
 
-    elif os.path.exists(os.path.join(sys.nuitka_srcdir, "mpv-1.dll")):
-        add_dll = getattr(os, "add_dll_directory", None)
-        if add_dll:
-            add_dll(sys.nuitka_srcdir)
+if hasattr(sys, "nuitka_srcdir"):
+    os.environ["MPV_LD_LIBRARY_PATH"] = sys.nuitka_srcdir
 
 
 # === Utils Funcs ===

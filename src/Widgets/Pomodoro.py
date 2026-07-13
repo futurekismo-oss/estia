@@ -11,6 +11,11 @@ from sounds import Sfx
 
 from Widgets.Playlist import Playlist
 from threading import Event
+from pathlib import Path
+
+
+BASE_DIR = Path(__file__).resolve().parent
+SOUND_PATH = BASE_DIR / "sounds" / "bell.mp3"
 
 
 def min_to_sec(no: int) -> int:
@@ -183,7 +188,7 @@ class Pomodoro(Vertical):
 
         self.mixer = Sfx()
         if hasattr(pygame, "mixer") and pygame.mixer.get_init():
-            self.break_sound = self.mixer.load_sound("sounds/bell.mp3")
+            self.break_sound = self.mixer.load_sound(str(SOUND_PATH))
         else:
             self.break_sound = None
 
