@@ -1,3 +1,4 @@
+import pygame
 from textual.app import ComposeResult
 from textual.widgets import Button, Digits, Select, Label, Static
 from textual.reactive import reactive
@@ -5,8 +6,8 @@ from textual_thin_slider import ThinSlider
 from textual.containers import Vertical, Horizontal
 from textual import on, work
 import time
-from Widgets.MusicSearch import MusicSearch
 from player import EstiaPlayer
+from sounds import Sfx
 
 from Widgets.Playlist import Playlist
 from threading import Event
@@ -105,7 +106,6 @@ class FloatingScreen(Static):
             if not self.is_fetching:
                 self.player.player.seek(event.value, "absolute-percent")
 
-                
     @work(thread=True)  # runs on a different thread
     def start_playback_worker(self, video_id: str, song_title) -> None:
         self.player.play_song(video_id)  # so as not the block the main UI loop
@@ -172,16 +172,20 @@ class Pomodoro(Vertical):
     def __init__(self) -> None:
         super().__init__()
         self.current_routine = []
-        self.current_stage_idx = 0
+        self.current_stage_index = 0
 
     def on_mount(self) -> None:
         self.digits = self.query_one("#time", Digits)
         self.end_time = 0.0
-        self.total_paused_time = 0.0
         self.pause_start = 0.0
         self.update_timer = self.set_interval(0.1, self.update_time, pause=True)
         self.current_stage_indicator = self.query_one("#current_stage_indicator", Label)
-        self.player: EstiaPlayer = self.app.query_one(MusicSearch).player
+
+        self.mixer = Sfx()
+        if hasattr(pygame, "mixer") and pygame.mixer.get_init():
+            self.break_sound = self.mixer.load_sound("sounds/bell.mp3")
+        else:
+            self.break_sound = None
 
     def start_timer(self) -> None:
         if self.end_time == 0.0:
@@ -203,17 +207,13 @@ class Pomodoro(Vertical):
         remaining = self.end_time - time.monotonic()
 
         if remaining <= 0:
+            self.mixer.play_sound(self.break_sound)
+
             if self.current_stage_index + 1 < len(self.current_routine):
                 self.current_stage_index += 1
                 stage_name, stage_minutes = self.current_routine[
                     self.current_stage_index
                 ]
-
-                if not self.current_stage_index % 2:  # Is even
-                    self.player.player.volume = 0
-                    self.app.notify("Break, reducing volume")
-                else:
-                    self.player.player.volume = 100
 
                 self.current_stage_indicator.update(stage_name)
 
