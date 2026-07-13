@@ -72,7 +72,22 @@ jobs:
         run: |
           curl -L -o mpv-dev.7z https://github.com/shinchiro/mpv-winbuild-cmake/releases/download/20260610/mpv-dev-x86_64-20260610-git-304426c.7z
           7z x mpv-dev.7z -ompv_libs
-          $mpv = Get-ChildItem -Path mpv_libs -Filter 'mpv-1.dll' -Recurse | Select-Object -First 1
+
+          $possiblePaths = @('mpv_libs/bin/mpv-1.dll', 'mpv_libs/mpv-1.dll', 'mpv_libs/*/mpv-1.dll')
+          $mpv = $null
+
+          foreach ($path in $possiblePaths) {
+            $found = Get-Item -Path $path -ErrorAction SilentlyContinue
+            if ($found) {
+              $mpv = $found
+              break
+            }
+          }
+
+          if (-not $mpv) {
+            $mpv = Get-ChildItem -Path mpv_libs -Filter 'mpv-1.dll' -Recurse | Select-Object -First 1
+          }
+
           if (-not $mpv) {
             Write-Error 'mpv-1.dll not found'
             exit 1
