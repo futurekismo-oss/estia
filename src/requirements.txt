@@ -1,0 +1,6 @@
+pygame==2.6.1
+python-mpv==1.0.8
+Requests==2.34.2
+textual==8.2.8
+textual_thin_slider==1.0.1
+ytmusicapi==1.12.1
