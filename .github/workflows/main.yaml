@@ -24,7 +24,6 @@ jobs:
       - name: Install Python Dependencies
         run: pip install -r requirements.txt
 
-
       - name: Install Linux C Dependencies
         if: matrix.target == 'linux'
         run: |
@@ -37,7 +36,7 @@ jobs:
         with:
           nuitka-version: main
           script-name: src/estia.py
-          standalone: true
+          mode: standalone
           include-package: mpv
           include-data-files: /usr/lib/x86_64-linux-gnu/libmpv.so=libmpv.so
 
@@ -47,7 +46,6 @@ jobs:
           mkdir -p AppDir/usr/bin
           mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
 
-          # Move standalone build contents to the AppDir bundle folder
           cp -r build/estia.dist/* AppDir/usr/bin/
           ln -s usr/bin/estia AppDir/AppRun
 
@@ -60,11 +58,9 @@ jobs:
           Categories=Utility;
           EOF
 
-          # Use raw shell tool to drop a placeholder app icon
-          convert -size 256x256 xc:blue AppDir/estia.png
-          cp AppDir/estia.png AppDir/usr/share/icons/hicolor/256x256/apps/estia.png
+          cp icon.png AppDir/estia.png
+          cp icon.png AppDir/usr/share/icons/hicolor/256x256/apps/estia.png
 
-          # Build final AppImage
           curl -L -o appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
           chmod +x appimagetool
           ./appimagetool --appimage-extract
@@ -85,13 +81,12 @@ jobs:
         with:
           nuitka-version: main
           script-name: src/estia.py
-          onefile: true
-          standalone: true
+          mode: onefile
           include-package: mpv
           include-data-files: ${{ env.MPV_DIR }}/mpv-1.dll=mpv-1.dll
 
-
       - name: Upload Linux Artifact
+
         if: matrix.target == 'linux'
         uses: actions/upload-artifact@v4
         with:
