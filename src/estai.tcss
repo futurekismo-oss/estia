@@ -80,6 +80,7 @@ MusicSearch {
 
 #results-list {
   visibility: hidden;
+  padding: 1;
   margin-bottom: 1;
 }
 

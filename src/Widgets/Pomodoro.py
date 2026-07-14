@@ -32,8 +32,8 @@ class FloatingScreen(Static):
         width: 25;
         height: 7;
         margin: 2 4;
-        background: $panel;
-        border: heavy $accent;
+        background: rgba(0, 0, 0, 0);
+        border: round $accent;
         position: absolute;
     }
 
@@ -48,6 +48,7 @@ class FloatingScreen(Static):
         self.progress_bar = self.query_one("#track_progress", ThinSlider)
         self.playback_time_label = self.query_one("#playback_time_label", Label)
         self.stop_playback_work = Event()
+        self.is_playing = False
 
     def compose(self) -> ComposeResult:
         yield Label("Song Name", id="label")
@@ -104,7 +105,7 @@ class FloatingScreen(Static):
     @on(ThinSlider.Changed, "#track_progress")
     def on_timeline_drag(self, event: ThinSlider.Changed) -> None:
         if event.control.has_focus:
-            if not self.is_fetching:
+            if self.is_playing:
                 self.player.player.seek(event.value, "absolute-percent")
 
     @work(thread=True)  # runs on a different thread
@@ -115,6 +116,7 @@ class FloatingScreen(Static):
 
         self.app.call_from_thread(self.music_title_label.update, song_title)
 
+        self.is_playing = True
         self.is_fetching = False
 
         while self.player.player.duration is not None:
