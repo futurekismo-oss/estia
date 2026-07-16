@@ -4,14 +4,15 @@ import json
 from threading import Event
 from textual import work
 from textual.app import ComposeResult
-from textual.widgets import Input, Label, SelectionList
+from textual.widgets import Input, Label, SelectionList, Button
 from textual.widgets.selection_list import Selection
-from textual.containers import Vertical
+from textual.containers import VerticalScroll
 from Widgets.Playlist import Playlist
 
 
 class ResultsList(SelectionList):
     def compose(self) -> ComposeResult:
+
         yield SelectionList(id="playlist")
 
     def update_results_ui(
@@ -40,7 +41,7 @@ class ResultsList(SelectionList):
             search_input.placeholder = "Search a song"
 
 
-class MusicSearch(Vertical):
+class MusicSearch(VerticalScroll):
     player: EstiaPlayer
     label: Label
     is_fetching: bool = False
@@ -57,7 +58,13 @@ class MusicSearch(Vertical):
         yield Input(placeholder="Search a song", type="text", id="search-bar")
         yield ResultsList(id="results_list")
         yield Label("", id="label")
-        # yield Button("", variant="warning", id="pause_music_btn")
+
+    def on_button_pressed(self, event: Button.Pressed):
+        button_id = event.button.id
+        if button_id == "playlist_save":
+            self.playlist_instance.save_playlist_to_file()
+        elif button_id == "playlist_load":
+            self.playlist_instance.load_playlist_from_file()
 
     def animate_fetcthig(self, base_str: str) -> None:
         if not self.is_fetching:
@@ -76,7 +83,6 @@ class MusicSearch(Vertical):
 
             self.thread_safe_search_song(search_query, event.input)
 
-    
     @work(thread=True)  # <- Works on another thread
     def thread_safe_search_song(self, search_query: str, search_input: Input) -> None:
         # ↓ Used to catch no internet errors

@@ -84,6 +84,19 @@ MusicSearch {
   margin-bottom: 1;
 }
 
+#playlist {
+  height: 85%
+}
+
+#playlist_save {
+  margin-left: 10;
+}
+
+#playlist_load {
+  margin-left: 5;
+  margin-bottom: 0;
+}
+
 .timer_btn {
   margin: 0 4;
   width: auto;

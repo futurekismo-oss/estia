@@ -2,6 +2,7 @@ from textual.message import Message
 from textual.widgets import Label, ListView, ListItem
 from textual.containers import Vertical
 from textual.app import ComposeResult
+import json
 
 
 class PlaylistTrackItem(ListItem):
@@ -28,6 +29,7 @@ class Playlist(Vertical):
     playlist_list: ListView
     playlist_label: Label
     playlist: list[tuple] = []
+    playlist_file = "playlist.json"
 
     def compose(self) -> ComposeResult:
         yield ListView(id="playlist_list")
@@ -51,3 +53,16 @@ class Playlist(Vertical):
         self.playlist = [t for t in self.playlist if t[1] != track_item.track_id]
 
         track_item.remove()
+
+    def save_playlist_to_file(self):
+        with open(self.playlist_file, "w") as file:
+            json.dump(self.playlist, file)
+        self.app.notify(f"Saved current playlist to {self.playlist_file}")
+
+    def load_playlist_from_file(self):
+        with open(self.playlist_file, "r") as file:
+            data = json.load(file)
+
+            for i in data:
+                self.add_track_safely(i[0], i[1])
+                # 0 = title, 1 = video id

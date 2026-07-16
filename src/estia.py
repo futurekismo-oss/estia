@@ -5,7 +5,8 @@ import json
 from player import EstiaPlayer
 
 from textual.app import App, ComposeResult
-from textual.widgets import Header, Footer, ListView, Static
+from textual.widgets import Header, Footer, ListView, Static, Button
+from textual.containers import Horizontal, Vertical
 from textual import work, events, on
 from textual.css.query import NoMatches
 import contextlib
@@ -55,7 +56,11 @@ class EstiaApp(App):
 
         yield search_widget
 
-        yield Playlist(id="playlist")
+        with Vertical():
+            yield Playlist(id="playlist")
+            with Horizontal():
+                yield Button("Save to playlist", id="playlist_save", variant="default")
+                yield Button("Load playlist", id="playlist_load", variant="default")
         yield Footer()
 
     @on(events.MouseDown)
