@@ -14,7 +14,7 @@ class PlaylistTrackItem(ListItem):
         self.track_id = track_id
 
     def compose(self) -> ComposeResult:
-        yield Label(f"󰆴 {self.title}")
+        yield Label(f"X {self.title}")
 
     def on_click(self) -> None:
         self.post_message(self.DeleteRequested(self))

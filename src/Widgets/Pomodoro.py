@@ -55,10 +55,10 @@ class FloatingScreen(Static):
         yield ThinSlider(range_min=0, range_max=100, id="track_progress")
         with Horizontal():
             yield Button(
-                "", variant="success", classes="tiny_btn", id="play_music_btn"
+                "▶", variant="success", classes="tiny_btn", id="play_music_btn"
             )
             yield Button(
-                "", variant="warning", classes="tiny_btn", id="pause_music_btn"
+                "⏸", variant="warning", classes="tiny_btn", id="pause_music_btn"
             )
             yield Label("[0:00 / 0:00]", id="playback_time_label")
 
@@ -264,8 +264,8 @@ class Pomodoro(Vertical):
 
         yield Label("Test", id="current_stage_indicator")
         yield Digits("25:00", id="time")
-        yield Button("", variant="success", id="start", classes="timer_btn")
-        yield Button("", id="stop", variant="error", classes="timer_btn")
+        yield Button("▶", variant="success", id="start", classes="timer_btn")
+        yield Button("⏸", id="stop", variant="error", classes="timer_btn")
         yield Select(
             self.pomodoro_times,
             id="Select",

@@ -47,7 +47,7 @@ class EstiaApp(App):
 
         self.music = EstiaPlayer(self)
 
-        yield Header(show_clock=True, icon="󰔟", time_format="%I:%M %p", name="Estia")
+        yield Header(show_clock=True, icon="⏱", time_format="%I:%M %p", name="Estia")
 
         yield Pomodoro()
 
