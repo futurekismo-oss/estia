@@ -1,7 +1,7 @@
 
 # Estia
 
-A Pomodoro Study Timer ***Tui*** with music streaming from youtube music integrated
+A Pomodoro Study Timer ***TUI*** with music streaming from youtube music integrated
 
 
 
@@ -11,19 +11,19 @@ A Pomodoro Study Timer ***Tui*** with music streaming from youtube music integra
 - [x] Pomodoro Timer
 - [x] Tui
 - [x] Youtube Music Streaming
-- [ ] Session Loggging in Database
+- [ ] Session Logging in Database
 - [ ] Web Version
 - [ ] *other planned features...*
 
 ## AI Notice
 AI has been used in this project as a learning tool such as explaining
-various concepts and generate general examples related to this project.
+various concepts and generating general examples related to this project.
 It has not been used to code any parts of this project
 
 
 ## Demo
 
-*comming soon...*
+![demo](demo.gif)
 
 ## Authors
 
