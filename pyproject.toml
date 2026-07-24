@@ -1,7 +1,7 @@
 [project]
 name = "estia"
 version = "0.1.0"
-description = "Add your description here"
+description = "A Pomodoro timer TUI with music streaming builtin"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
